@@ -1,0 +1,96 @@
+{
+  "theme": "Light",
+  "archetype": "4 (Swiss & High-Contrast)",
+  "color_palette": {
+    "background": "#F5F5F5",
+    "surface": "#FFFFFF",
+    "primary": "#111111",
+    "secondary": "#E5E5E5",
+    "accent": "#FF331F",
+    "text_main": "#111111",
+    "text_muted": "#737373",
+    "sentiment_positive": "#111111",
+    "sentiment_neutral": "#A3A3A3",
+    "sentiment_negative": "#FF331F"
+  },
+  "typography": {
+    "font_heading": "Cabinet Grotesk, sans-serif",
+    "font_body": "Satoshi, sans-serif",
+    "import_url": "https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700,400,900&f[]=satoshi@400,500,700,900&display=swap",
+    "h1": "text-4xl sm:text-5xl font-black tracking-tighter",
+    "h2": "text-2xl sm:text-3xl font-bold tracking-tight",
+    "h3": "text-xl sm:text-2xl font-bold",
+    "h4": "text-lg font-semibold",
+    "body": "text-base font-medium",
+    "small": "text-sm font-medium",
+    "overline": "text-xs font-bold uppercase tracking-[0.2em]"
+  },
+  "spacing_and_layout": {
+    "container_padding": "p-6 md:p-8",
+    "grid_gap": "gap-4 md:gap-6",
+    "dashboard_grid": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4",
+    "border_radius": "rounded-none"
+  },
+  "surface_styles": {
+    "dashboard_card": "bg-white border border-[#E5E5E5] p-6 rounded-none shadow-none hover:border-[#111111] transition-colors duration-200",
+    "ai_summary_card": "bg-[#F5F5F5] border border-[#111111] p-6 rounded-none shadow-[4px_4px_0_0_#111111]",
+    "sidebar": "bg-white border-r border-[#E5E5E5] h-full",
+    "header": "bg-white/90 backdrop-blur-xl border-b border-[#E5E5E5] sticky top-0 z-50"
+  },
+  "components_strategy": {
+    "icons": {
+      "library": "@phosphor-icons/react",
+      "style": "weight='duotone'",
+      "install_command": "yarn add @phosphor-icons/react"
+    },
+    "buttons": {
+      "primary": "bg-[#111111] text-white px-6 py-2.5 font-bold tracking-wide rounded-none border-2 border-[#111111] hover:bg-white hover:text-[#111111] transition-all duration-200",
+      "secondary": "bg-white text-[#111111] px-6 py-2.5 font-bold tracking-wide rounded-none border-2 border-[#E5E5E5] hover:border-[#111111] transition-all duration-200",
+      "accent": "bg-[#FF331F] text-white px-6 py-2.5 font-bold tracking-wide rounded-none border-2 border-[#FF331F] hover:bg-white hover:text-[#FF331F] transition-all duration-200"
+    },
+    "inputs": {
+      "default": "border border-[#E5E5E5] rounded-none px-4 py-2.5 w-full focus:outline-none focus:border-[#111111] focus:ring-1 focus:ring-[#111111] text-[#111111] bg-white transition-all duration-200"
+    },
+    "charts": {
+      "library": "chart.js and react-chartjs-2",
+      "style": "Minimalist, no rounded corners on bars, grid lines should be extremely light (#E5E5E5) or hidden, tooltip should have a solid black background.",
+      "install_command": "yarn add chart.js react-chartjs-2"
+    },
+    "modals": {
+      "style": "bg-white border-2 border-[#111111] rounded-none shadow-[8px_8px_0_0_#111111] p-8"
+    }
+  },
+  "motion_and_interactions": {
+    "hover": "Subtle border color changes and background inversions for buttons. Use duration-200 ease-in-out.",
+    "focus": "High contrast 2px rings focus:ring-2 focus:ring-[#111111] focus:ring-offset-2",
+    "loading": "ASCII art loader or simple harsh blinking block instead of typical spinner for the Swiss/Brutalist feel."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "user_avatar",
+        "url": "https://images.pexels.com/photos/935969/pexels-photo-935969.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Elegant black and white photo of a man in glasses and suit. Used for user profile/avatar placeholders."
+      },
+      {
+        "category": "business_storefront",
+        "url": "https://images.unsplash.com/photo-1566051263991-a529acfa39c7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwxfHxsb2NhbCUyMGNvZmZlZSUyMHNob3AlMjBzdG9yZWZyb250fGVufDB8fHx8MTc3NTMzMjYzM3ww&ixlib=rb-4.1.0&q=85",
+        "description": "Caffeinery store facade. Used as a placeholder for the local business entity."
+      }
+    ]
+  },
+  "accessibility_and_testing": {
+    "contrast": "APCA contrast standards applied. Text colors on interactive elements clearly specified.",
+    "testing_attributes": "All interactive elements, forms, inputs, and key informational elements MUST include a data-testid attribute formatted as kebab-case role-based (e.g., data-testid='login-submit-button')."
+  },
+  "instructions_to_main_agent": [
+    "Strictly adhere to the selected Archetype 4 (Swiss & High-Contrast). Do not use rounded borders anywhere (rounded-none).",
+    "Include font links from Fontshare in the main HTML file or via CSS import.",
+    "Ensure all components (sidebar, layout grids, cards) use solid borders with sharp contrasting edges instead of soft shadows.",
+    "The AI Summary placeholder should visually stand out. Use the ai_summary_card style (solid black border and solid shadow offset).",
+    "Use Phosphor icons with duotone weight to add subtle character without breaking the strict minimalist vibe.",
+    "Install chart.js and react-chartjs-2 for the Sentiment charts. Configure them to be sharp, minimal, and devoid of unnecessary chart junk.",
+    "Do not use transparent header backgrounds without blur. Keep it readable.",
+    "Remember to add data-testid to every interactive component (button, links, form inputs) for testing purposes."
+  ]
+}
