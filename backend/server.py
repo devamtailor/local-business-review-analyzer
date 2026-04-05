@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, Field
 
+
 # JWT Configuration
 JWT_ALGORITHM = "HS256"
 
@@ -102,8 +103,8 @@ async def seed_admin():
         print(f"Admin password updated: {admin_email}")
     
     # Write test credentials
-    os.makedirs("/app/memory", exist_ok=True)
-    with open("/app/memory/test_credentials.md", "w") as f:
+    os.makedirs("memory", exist_ok=True)
+    with open("memory/test_credentials.md", "w") as f:
         f.write("# Test Credentials\n\n")
         f.write("## Admin User\n")
         f.write(f"- Email: {admin_email}\n")
@@ -122,39 +123,64 @@ async def create_indexes():
     await db.reviews.create_index("business_id")
     await db.reviews.create_index("user_id")
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global db_client, db
-    mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
-    db_name = os.environ.get("DB_NAME", "review_analyzer")
-    db_client = AsyncIOMotorClient(mongo_url)
-    db = db_client[db_name]
-    await create_indexes()
-    await seed_admin()
-    print("Database connected")
-    yield
-    db_client.close()
-    print("Database disconnected")
+app = FastAPI()
 
-app = FastAPI(title="AI Review Analyzer API", lifespan=lifespan)
-
-# CORS - Allow multiple origins for dev/preview/production
-cors_origins = [
-    os.environ.get("FRONTEND_URL", "http://localhost:3000"),
+origins = [
     "http://localhost:3000",
 ]
-# Add production domain pattern
-frontend_url = os.environ.get("FRONTEND_URL", "")
-if "preview.emergentagent.com" in frontend_url:
-    cors_origins.append(frontend_url)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# MANUAL CORS MIDDLEWARE (replacing CORSMiddleware)
+@app.middleware("http")
+async def manual_cors_middleware(request: Request, call_next):
+    # Log for debugging
+    origin = request.headers.get("origin")
+    print(f"REQUEST: {request.method} {request.url.path} | ORIGIN: {origin}")
+    
+    if request.method == "OPTIONS":
+        # Handle preflight directly
+        response = Response()
+        response.status_code = 200
+    else:
+        response = await call_next(request)
+    
+    # Inject CORS headers manually
+    if origin in ["http://localhost:3000", "http://127.0.0.1:3000", "http://[::1]:3000"] or not origin:
+        response.headers["Access-Control-Allow-Origin"] = origin if origin else "http://localhost:3000"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+    
+    return response
+
+@app.on_event("startup")
+async def startup_db_client():
+    global db_client, db
+    mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+    db_name = os.environ.get("DB_NAME", "review_analyzer")
+    db_client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=2000)
+    db = db_client[db_name]
+    try:
+        await create_indexes()
+        await seed_admin()
+        print("Database connected")
+    except Exception as e:
+        print(f"Warning: Could not connect to MongoDB or initialize DB: {e}")
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    db_client.close()
+    print("Database disconnected")
+
+@app.get("/")
+def read_root():
+    return { "message": "Backend is running" }
 
 # Auth Helper
 async def get_current_user(request: Request) -> dict:
@@ -237,27 +263,46 @@ async def register(user_data: UserRegister, response: Response):
 
 @app.post("/api/auth/login")
 async def login(user_data: UserLogin, request: Request, response: Response):
-    email = user_data.email.lower()
-    client_ip = request.client.host if request.client else "unknown"
-    identifier = f"{client_ip}:{email}"
-    
-    await check_brute_force(identifier)
-    
-    user = await db.users.find_one({"email": email})
-    if not user or not verify_password(user_data.password, user["password_hash"]):
-        await record_failed_attempt(identifier)
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    await clear_failed_attempts(identifier)
-    
-    user_id = str(user["_id"])
-    access_token = create_access_token(user_id, email)
-    refresh_token = create_refresh_token(user_id)
-    
-    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
-    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
-    
-    return {"id": user_id, "email": user["email"], "name": user["name"], "role": user.get("role", "user")}
+    try:
+        print(f"Login attempt for email: {user_data.email}")
+        email = user_data.email.lower()
+        client_ip = request.client.host if request.client else "unknown"
+        identifier = f"{client_ip}:{email}"
+        
+        print(f"Checking brute force for: {identifier}")
+        await check_brute_force(identifier)
+        
+        print("Finding user in database...")
+        user = await db.users.find_one({"email": email})
+        if not user:
+            print(f"User not found: {email}")
+            await record_failed_attempt(identifier)
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+            
+        print("Verifying password...")
+        if not verify_password(user_data.password, user["password_hash"]):
+            print(f"Password mismatch for: {email}")
+            await record_failed_attempt(identifier)
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        await clear_failed_attempts(identifier)
+        
+        print("Generating tokens...")
+        user_id = str(user["_id"])
+        access_token = create_access_token(user_id, email)
+        refresh_token = create_refresh_token(user_id)
+        
+        print("Setting cookies...")
+        response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
+        response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+        
+        print("Login successful")
+        return {"id": user_id, "email": user["email"], "name": user["name"], "role": user.get("role", "user")}
+    except Exception as e:
+        import traceback
+        print("CRITICAL ERROR during login:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/auth/logout")
 async def logout(response: Response):
@@ -588,4 +633,4 @@ async def generate_summary(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
