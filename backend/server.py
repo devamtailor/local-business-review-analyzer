@@ -1,6 +1,28 @@
+'''from dotenv import load_dotenv
+load_dotenv()'''
+import os
 from dotenv import load_dotenv
-load_dotenv()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(BASE_DIR, ".env")
+
+load_dotenv(dotenv_path=env_path)
+
+MONGO_URI = os.getenv("MONGO_URL")
+print("Mongo URI:", MONGO_URI)
+
+
+'''MONGO_URI = os.getenv("MONGO_URI")
+print("Mongo URI:", MONGO_URI)  # debug check
+'''
+# 👇 ADD THIS PART HERE
+from pymongo import MongoClient
+
+try:
+    client = MongoClient(MONGO_URI)
+    print("Databases:", client.list_database_names())
+except Exception as e:
+    print("MongoDB connection error:", e)
 import os
 import secrets
 from datetime import datetime, timezone, timedelta
@@ -124,6 +146,25 @@ async def create_indexes():
     await db.reviews.create_index("user_id")
 
 app = FastAPI()
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# 👇 ADD HERE (right after app creation)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+@app.get("/test")
+def test():
+    return {"message": "THIS IS MY LOCAL SERVER"}
 
 origins = [
     "http://localhost:3000",
@@ -263,6 +304,7 @@ async def register(user_data: UserRegister, response: Response):
 
 @app.post("/api/auth/login")
 async def login(user_data: UserLogin, request: Request, response: Response):
+    print("🔥 LOGIN HIT")
     try:
         print(f"Login attempt for email: {user_data.email}")
         email = user_data.email.lower()
