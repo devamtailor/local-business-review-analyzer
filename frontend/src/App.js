@@ -6,7 +6,12 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Businesses from './pages/Businesses';
 import Reviews from './pages/Reviews';
-import { House, Buildings, ChatText, SignOut, List, X } from '@phosphor-icons/react';
+import ImportReviews from './pages/ImportReviews';
+import Analysis from './pages/Analysis';
+import Offers from './pages/Offers';
+import Home from './pages/Home';
+import PublicBusiness from './pages/PublicBusiness';
+import { House, Buildings, ChatText, UploadSimple, Sparkle, SignOut, List, X, Gift } from '@phosphor-icons/react';
 import './App.css';
 
 function ProtectedRoute({ children }) {
@@ -36,6 +41,9 @@ function Sidebar() {
     { path: '/dashboard', icon: House, label: 'Dashboard' },
     { path: '/businesses', icon: Buildings, label: 'Businesses' },
     { path: '/reviews', icon: ChatText, label: 'Reviews' },
+    { path: '/import', icon: UploadSimple, label: 'Import Reviews' },
+    { path: '/analysis', icon: Sparkle, label: 'AI Analysis' },
+    { path: '/offers', icon: Gift, label: 'Offers' },
   ];
   
   const handleLogout = async () => {
@@ -188,8 +196,40 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/import"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ImportReviews />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analysis"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Analysis />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/" element={<Home />} />
+          <Route path="/business/:id" element={<PublicBusiness />} />
+          <Route
+            path="/offers"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Offers />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

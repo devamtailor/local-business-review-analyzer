@@ -14,6 +14,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   const checkAuth = async () => {
+    const path = window.location.pathname;
+    if (path === '/' || path.startsWith('/business/')) {
+        setUser(false);
+        setLoading(false);
+        return;
+    }
+
     try {
       const { data } = await axios.get(`${API_URL}/api/auth/me`, {
         withCredentials: true

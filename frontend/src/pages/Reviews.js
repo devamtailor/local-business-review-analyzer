@@ -13,6 +13,7 @@ export default function Reviews() {
   const [showModal, setShowModal] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
   const [selectedBusiness, setSelectedBusiness] = useState('');
+  const [selectedSentiment, setSelectedSentiment] = useState('');
   const [formData, setFormData] = useState({ business_id: '', rating: 5, text: '', reviewer_name: '' });
   const [error, setError] = useState('');
 
@@ -82,9 +83,11 @@ export default function Reviews() {
     return business ? business.name : 'Unknown Business';
   };
 
-  const filteredReviews = selectedBusiness 
-    ? reviews.filter(r => r.business_id === selectedBusiness)
-    : reviews;
+  const filteredReviews = reviews.filter(r => {
+    if (selectedBusiness && r.business_id !== selectedBusiness) return false;
+    if (selectedSentiment && r.sentiment !== selectedSentiment) return false;
+    return true;
+  });
 
   if (loading) {
     return (
@@ -118,18 +121,30 @@ export default function Reviews() {
         </button>
       </div>
 
-      {/* Filter */}
-      <div className="mb-6">
+      {/* Filters */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
         <select
           data-testid="business-filter-select"
           value={selectedBusiness}
           onChange={(e) => setSelectedBusiness(e.target.value)}
-          className="border border-secondary rounded-none px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-primary bg-white transition-all duration-200 font-body"
+          className="border border-secondary rounded-none px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-primary bg-white transition-all duration-200 font-body flex-1 md:flex-none"
         >
           <option value="">All Businesses</option>
           {businesses.map((business) => (
             <option key={business._id} value={business._id}>{business.name}</option>
           ))}
+        </select>
+        
+        <select
+          data-testid="sentiment-filter-select"
+          value={selectedSentiment}
+          onChange={(e) => setSelectedSentiment(e.target.value)}
+          className="border border-secondary rounded-none px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-primary bg-white transition-all duration-200 font-body flex-1 md:flex-none"
+        >
+          <option value="">All Sentiments</option>
+          <option value="positive">Positive</option>
+          <option value="neutral">Neutral</option>
+          <option value="negative">Negative</option>
         </select>
       </div>
 
