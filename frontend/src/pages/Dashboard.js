@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
-import { Buildings, ChartBar, Star, TrendUp, Sparkle, ArrowRight } from '@phosphor-icons/react';
+import { Buildings, ChartBar, Star, TrendUp, Sparkle, ArrowRight, UploadSimple, Robot } from '@phosphor-icons/react';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
@@ -62,6 +62,8 @@ export default function Dashboard() {
   };
 
   const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         labels: {
@@ -165,46 +167,61 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-8">
         <div data-testid="sentiment-chart" className="bg-white border border-secondary p-6 rounded-none">
           <h2 className="font-heading text-xl font-bold mb-6">Sentiment Distribution</h2>
-          <div className="h-64 flex items-center justify-center">
+          <div className="h-64 relative w-full flex items-center justify-center">
             <Pie data={sentimentChartData} options={chartOptions} />
           </div>
         </div>
 
         <div data-testid="rating-chart" className="bg-white border border-secondary p-6 rounded-none">
           <h2 className="font-heading text-xl font-bold mb-6">Rating Distribution</h2>
-          <div className="h-64">
+          <div className="h-64 relative w-full">
             <Bar data={ratingChartData} options={barOptions} />
           </div>
         </div>
       </div>
 
-      {/* AI Summary Placeholder */}
+      {/* AI Analysis Card */}
       <div data-testid="ai-summary-card" className="bg-background border-2 border-primary p-6 rounded-none shadow-[4px_4px_0_0_#111111] mb-8">
         <div className="flex items-center gap-3 mb-4">
           <Sparkle weight="duotone" size={24} className="text-accent" />
           <h2 className="font-heading text-xl font-bold">AI Insights</h2>
-          <span className="bg-accent text-white px-2 py-0.5 text-xs font-bold uppercase tracking-wider">Placeholder</span>
+          {stats?.total_analyses > 0 && (
+            <span className="bg-primary text-white px-2 py-0.5 text-xs font-bold uppercase tracking-wider">
+              {stats.total_analyses} {stats.total_analyses === 1 ? 'Analysis' : 'Analyses'} Ready
+            </span>
+          )}
         </div>
         <p className="text-text-muted font-body">
-          AI-powered sentiment analysis and review summaries will appear here. This feature analyzes patterns 
-          in customer feedback to provide actionable insights for your business decisions.
+          Use the AI Analysis feature to get Gemini-powered sentiment breakdowns, key complaints, strengths,
+          and actionable improvement suggestions for any business.
         </p>
-        <div className="mt-4 pt-4 border-t border-secondary">
-          <p className="text-sm text-text-muted font-body">
-            <strong>Coming soon:</strong> Sentiment trends, keyword extraction, and AI-generated recommendations.
-          </p>
+        <div className="mt-4 pt-4 border-t border-secondary flex flex-wrap gap-3">
+          <Link
+            to="/analysis"
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 font-body font-semibold text-sm hover:bg-primary/90 transition-colors"
+          >
+            <Robot size={16} weight="duotone" />
+            Run AI Analysis
+          </Link>
+          <Link
+            to="/import"
+            className="flex items-center gap-2 border border-primary text-primary px-4 py-2 font-body font-semibold text-sm hover:bg-primary hover:text-white transition-colors"
+          >
+            <UploadSimple size={16} weight="bold" />
+            Import Reviews
+          </Link>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link 
           to="/businesses"
           data-testid="view-businesses-link"
           className="bg-white border border-secondary p-6 rounded-none hover:border-primary transition-colors duration-200 flex items-center justify-between group"
         >
           <div>
-            <h3 className="font-heading text-lg font-bold">Manage Businesses</h3>
+            <h3 className="font-heading text-lg font-bold">Businesses</h3>
             <p className="text-text-muted font-body text-sm">Add and manage local businesses</p>
           </div>
           <ArrowRight weight="bold" size={24} className="text-text-muted group-hover:text-primary transition-colors" />
@@ -216,10 +233,34 @@ export default function Dashboard() {
           className="bg-white border border-secondary p-6 rounded-none hover:border-primary transition-colors duration-200 flex items-center justify-between group"
         >
           <div>
-            <h3 className="font-heading text-lg font-bold">View Reviews</h3>
-            <p className="text-text-muted font-body text-sm">Browse and analyze customer reviews</p>
+            <h3 className="font-heading text-lg font-bold">Reviews</h3>
+            <p className="text-text-muted font-body text-sm">Browse and manage reviews</p>
           </div>
           <ArrowRight weight="bold" size={24} className="text-text-muted group-hover:text-primary transition-colors" />
+        </Link>
+
+        <Link 
+          to="/import"
+          data-testid="import-reviews-link"
+          className="bg-white border border-secondary p-6 rounded-none hover:border-primary transition-colors duration-200 flex items-center justify-between group"
+        >
+          <div>
+            <h3 className="font-heading text-lg font-bold">Import Reviews</h3>
+            <p className="text-text-muted font-body text-sm">CSV, URL scraping, Google</p>
+          </div>
+          <UploadSimple weight="bold" size={24} className="text-text-muted group-hover:text-primary transition-colors" />
+        </Link>
+
+        <Link 
+          to="/analysis"
+          data-testid="analysis-link"
+          className="bg-primary text-white p-6 rounded-none hover:bg-primary/90 transition-colors duration-200 flex items-center justify-between group"
+        >
+          <div>
+            <h3 className="font-heading text-lg font-bold">AI Analysis</h3>
+            <p className="text-white/70 font-body text-sm">Gemini-powered insights</p>
+          </div>
+          <Sparkle weight="duotone" size={24} className="text-white/70 group-hover:text-white transition-colors" />
         </Link>
       </div>
 
