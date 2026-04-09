@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Gift, Ticket, Plus, Building, Tag } from '@phosphor-icons/react';
+const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8001";
 
 function Offers() {
   const [businesses, setBusinesses] = useState([]);
@@ -28,9 +29,9 @@ function Offers() {
     setLoading(true);
     try {
       const [bRes, oRes, cRes] = await Promise.all([
-          fetch('http://localhost:8001/api/businesses', { credentials: 'include' }),
-          fetch('http://localhost:8001/api/offers', { credentials: 'include' }),
-          fetch('http://localhost:8001/api/coupons', { credentials: 'include' })
+          fetch(`${API_URL}/api/businesses`, { credentials: 'include' }),
+          fetch(`${API_URL}/api/offers`, { credentials: 'include' }),
+          fetch(`${API_URL}/api/coupons`, { credentials: 'include' })
       ]);
       
       if (bRes.ok) setBusinesses(await bRes.json());
@@ -53,7 +54,7 @@ function Offers() {
           if (!payload.expiry_date) delete payload.expiry_date;
           if (!payload.business_id) throw new Error("Please select a business");
 
-          const response = await fetch('http://localhost:8001/api/offers', {
+          const response = await fetch(`${API_URL}/api/offers`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MagnifyingGlass, Star, ArrowRight, Buildings } from '@phosphor-icons/react';
 
+const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8001";
+
 function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -45,7 +47,7 @@ function Home() {
     setShowDropdown(true);
     setSelectedIndex(-1);
     try {
-      const response = await fetch(`http://localhost:8001/api/public/businesses/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`${API_URL}/api/public/businesses/search?q=${encodeURIComponent(query)}`);
       if (response.ok) {
         setSearchResults(await response.json());
       }
@@ -83,7 +85,7 @@ function Home() {
 
   const fetchTrending = async () => {
     try {
-        const response = await fetch('http://localhost:8001/api/public/businesses/trending');
+        const response = await fetch(`${API_URL}/api/public/businesses/trending`);
         if (response.ok) {
             const data = await response.json();
             setTrending(data);

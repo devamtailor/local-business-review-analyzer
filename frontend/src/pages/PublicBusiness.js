@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Star, Gift, MapPin, Tag, Sparkle, ChatText, WarningCircle, CheckCircle } from '@phosphor-icons/react';
+const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8001";
 
 function PublicBusiness() {
   const { id } = useParams();
@@ -29,19 +30,19 @@ function PublicBusiness() {
     setLoading(true);
     try {
       // Fetch Business details (includes AI Preview)
-      const bRes = await fetch(`http://localhost:8001/api/public/businesses/${id}`);
+      const bRes = await fetch(`${API_URL}/api/public/businesses/${id}`);
       if (bRes.ok) {
         setBusiness(await bRes.json());
       }
       
       // Fetch Offers
-      const oRes = await fetch(`http://localhost:8001/api/public/offers/business/${id}`);
+      const oRes = await fetch(`${API_URL}/api/public/offers/business/${id}`);
       if (oRes.ok) {
         setOffers(await oRes.json());
       }
 
       // Fetch Reviews
-      const rRes = await fetch(`http://localhost:8001/api/public/reviews?business_id=${id}`);
+      const rRes = await fetch(`${API_URL}/api/public/reviews?business_id=${id}`);
       if (rRes.ok) {
         setReviews(await rRes.json());
       }
@@ -64,7 +65,7 @@ function PublicBusiness() {
     setSubmitSuccess(false);
     
     try {
-      const response = await fetch(`http://localhost:8001/api/public/reviews`, {
+      const response = await fetch(`${API_URL}/api/public/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
