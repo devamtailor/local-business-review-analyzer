@@ -155,32 +155,11 @@ for url in frontend_url_env.split(","):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# Manual CORS middleware for extra coverage
-@app.middleware("http")
-async def manual_cors_middleware(request: Request, call_next):
-    origin = request.headers.get("origin")
-    print(f"REQUEST: {request.method} {request.url.path} | ORIGIN: {origin}")
-
-    if request.method == "OPTIONS":
-        response = Response()
-        response.status_code = 200
-    else:
-        response = await call_next(request)
-
-    if origin in allowed_origins or not origin:
-        fallback_origin = allowed_origins[-1] if len(allowed_origins) > 3 else "http://localhost:3000"
-        response.headers["Access-Control-Allow-Origin"] = origin if origin else fallback_origin
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
-
-    return response
 
 
 @app.on_event("startup")
