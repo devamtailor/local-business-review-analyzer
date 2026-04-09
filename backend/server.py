@@ -134,14 +134,27 @@ async def create_indexes():
 # ─── FastAPI App ─────────────────────────────────────────────────────────────
 app = FastAPI(title="Review Analyzer API", version="2.0.0")
 
+# Set up Allowed Origins for CORS
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://[::1]:3000"
+]
+
+frontend_url_env = os.environ.get("FRONTEND_URL", "")
+for url in frontend_url_env.split(","):
+    url = url.strip()
+    if url:
+        allowed_origins.append(url)
+        if url.endswith("/"):
+            allowed_origins.append(url[:-1])
+        else:
+            allowed_origins.append(url + "/")
+
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://[::1]:3000"
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -160,9 +173,9 @@ async def manual_cors_middleware(request: Request, call_next):
     else:
         response = await call_next(request)
 
-    allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000", "http://[::1]:3000"]
     if origin in allowed_origins or not origin:
-        response.headers["Access-Control-Allow-Origin"] = origin if origin else "http://localhost:3000"
+        fallback_origin = allowed_origins[-1] if len(allowed_origins) > 3 else "http://localhost:3000"
+        response.headers["Access-Control-Allow-Origin"] = origin if origin else fallback_origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
