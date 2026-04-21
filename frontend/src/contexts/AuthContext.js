@@ -5,6 +5,29 @@ const AuthContext = createContext(null);
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.url !== `${API_URL}/api/auth/refresh` &&
+      originalRequest.url !== `${API_URL}/api/auth/login`
+    ) {
+      originalRequest._retry = true;
+      try {
+        await axios.post(`${API_URL}/api/auth/refresh`, {}, { withCredentials: true });
+        return axios(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed, let the application handle the 401
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
