@@ -20,7 +20,8 @@ axios.interceptors.response.use(
         await axios.post(`${API_URL}/api/auth/refresh`, {}, { withCredentials: true });
         return axios(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, let the application handle the 401
+        // Refresh failed, meaning the user's session is completely dead.
+        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
